@@ -1,0 +1,15 @@
+{
+  "name": "installi",
+  "version": "1.0.0",
+  "description": "9router on Infrlo",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "9router": "latest"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
