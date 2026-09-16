@@ -6,6 +6,20 @@ process.env.NODE_ENV = "production";
 process.env.HOSTNAME = "0.0.0.0";
 process.env.PORT = targetPort.toString();
 
+// Initialize SQLite runtime self-heal from 9router
+try {
+  const { ensureSqliteRuntime, buildEnvWithRuntime } = require("9router/hooks/sqliteRuntime");
+  ensureSqliteRuntime({ silent: false });
+  process.env = buildEnvWithRuntime(process.env);
+} catch (e) {
+  console.warn("[Infrlo] sqliteRuntime hook skipped:", e.message);
+}
+
+// Add local root node_modules to NODE_PATH so 9router can find better-sqlite3 / sql.js
+const localModules = path.join(__dirname, "node_modules");
+process.env.NODE_PATH = [localModules, process.env.NODE_PATH || ""].filter(Boolean).join(path.delimiter);
+require("module").Module._initPaths();
+
 console.log(`[Infrlo] Booting 9router Next.js on port ${targetPort}...`);
 
 const routerDir = path.dirname(require.resolve("9router/package.json"));
@@ -14,7 +28,7 @@ const appDir = path.join(routerDir, "app");
 process.chdir(appDir);
 require(path.join(appDir, "server.js"));
 
-// Proxy listener: bridge common PaaS ports to targetPort
+// Proxy bridge: listen on common PaaS ports and pipe to targetPort
 const portsToBridge = [80, 8080, 5000, 20128].filter(p => p !== targetPort);
 
 portsToBridge.forEach(p => {
