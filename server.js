@@ -1,19 +1,14 @@
-const { spawn } = require("child_process");
+const path = require("path");
 
-const port = process.env.PORT || "20128";
-console.log(`[Infrlo] Starting 9router on port ${port}...`);
+// Infrlo / PaaS environment configuration
+process.env.NODE_ENV = "production";
+process.env.HOSTNAME = "0.0.0.0";
+process.env.PORT = process.env.PORT || "3000";
 
-const child = spawn(
-  "npx",
-  ["9router", "-n", "-l", "--skip-update", "-p", port, "-H", "0.0.0.0"],
-  {
-    stdio: "inherit",
-    shell: true,
-    env: process.env,
-  }
-);
+console.log(`[Infrlo] Booting 9router on ${process.env.HOSTNAME}:${process.env.PORT}...`);
 
-child.on("exit", (code) => {
-  console.log(`[Infrlo] 9router exited with code ${code}`);
-  process.exit(code || 0);
-});
+const routerDir = path.dirname(require.resolve("9router/package.json"));
+const appDir = path.join(routerDir, "app");
+
+process.chdir(appDir);
+require(path.join(appDir, "server.js"));
